@@ -174,3 +174,69 @@ export async function createGitHubIssue({
 
   return { number: data.number, htmlUrl: data.html_url };
 }
+
+export async function getGitHubIssue(issueNumber: number): Promise<{
+  body: string;
+}> {
+  const githubPat = process.env.GITHUB_PAT;
+  const owner = process.env.GITHUB_REPO_OWNER || 'lingdojo';
+  const repo = process.env.GITHUB_REPO_NAME || 'kana-dojo';
+
+  if (!githubPat) {
+    throw new Error('GITHUB_PAT is not configured');
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`,
+    {
+      headers: {
+        Authorization: `Bearer ${githubPat}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`GitHub issue API error ${response.status}`);
+  }
+
+  const data = (await response.json()) as { body?: string | null };
+  return { body: data.body || '' };
+}
+
+export async function updateGitHubIssueBody({
+  issueNumber,
+  body,
+}: {
+  issueNumber: number;
+  body: string;
+}): Promise<void> {
+  const githubPat = process.env.GITHUB_PAT;
+  const owner = process.env.GITHUB_REPO_OWNER || 'lingdojo';
+  const repo = process.env.GITHUB_REPO_NAME || 'kana-dojo';
+
+  if (!githubPat) {
+    throw new Error('GITHUB_PAT is not configured');
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${githubPat}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ body }),
+      signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`GitHub issue API error ${response.status}`);
+  }
+}
