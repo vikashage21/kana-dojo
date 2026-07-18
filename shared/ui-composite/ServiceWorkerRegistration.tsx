@@ -9,7 +9,8 @@ import { useEffect } from 'react';
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+      let updateInterval: ReturnType<typeof setInterval> | undefined;
+      const onLoad = () => {
         const registerServiceWorker = async () => {
           try {
             const registration = await navigator.serviceWorker.register(
@@ -21,7 +22,7 @@ export default function ServiceWorkerRegistration() {
 
             console.warn('Audio SW registered:', registration.scope);
 
-            setInterval(
+            updateInterval = setInterval(
               () => {
                 registration.update();
               },
@@ -33,7 +34,12 @@ export default function ServiceWorkerRegistration() {
         };
 
         void registerServiceWorker();
-      });
+      };
+      window.addEventListener('load', onLoad, { once: true });
+      return () => {
+        window.removeEventListener('load', onLoad);
+        if (updateInterval) clearInterval(updateInterval);
+      };
     }
   }, []);
 

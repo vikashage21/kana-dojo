@@ -3,7 +3,8 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import GoogleAnalytics from '@/core/analytics/GoogleAnalytics';
-import MSClarity from '@/core/analytics/MSClarity';
+// Performance rescue: Microsoft Clarity is intentionally disabled for now.
+// import MSClarity from '@/core/analytics/MSClarity';
 import {
   StructuredData,
   kanaDojoSchema,
@@ -198,7 +199,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         {isAnalyticsEnabled && (
           <>
             <GoogleAnalytics />
-            <MSClarity />
+            {/* <MSClarity /> */}
             <Analytics />
             <SpeedInsights />
           </>
